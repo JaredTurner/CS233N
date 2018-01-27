@@ -68,31 +68,13 @@ namespace TicTacToe
         }
 
         //* TODO:  finish all of these that return true
-        private bool IsAnyRowWinner()
-        {
-            return true;
-        }
+        //private bool IsAnyRowWinner()
 
         private bool IsColumnWinner(int col)
         {
-            return true;
-        }
-
-        private bool IsAnyColumnWinner()
-        {
-            return true;
-        }
-
-        private bool IsDiagonal1Winner()
-        {
-            return true;
-        }
-
-        private bool IsDiagonal2Winner()
-        {
-            Label square = GetSquare(0, (SIZE - 1));
+            Label square = GetSquare(0, col);
             string symbol = square.Text;
-            for (int row = 1, col = SIZE - 2; row < SIZE; row++, col--)
+            for (int row = 1; row < SIZE; row++)
             {
                 square = GetSquare(row, col);
                 if (symbol == EMPTY || square.Text != symbol)
@@ -101,13 +83,45 @@ namespace TicTacToe
             return true;
         }
 
-        private bool IsAnyDiagonalWinner()
+        //Diagonal 1 is from top left to bottom right
+        private bool IsDiagonal1Winner()
         {
+            Label square = GetSquare(0, 0);
+            string symbol = square.Text;
+            for (int row = 0, col = 0; row < SIZE; row++, col++)
+            {
+                square = GetSquare(row, col);
+                if (symbol == EMPTY || square.Text != symbol)
+                return false;
+            }
+            return true;
+        }
+        //Diagonal 2 is from top right to bottom left
+        private bool IsDiagonal2Winner()
+        {
+            Label square = GetSquare(0, (SIZE - 1));
+            string symbol = square.Text;
+            for (int row = 0, col = SIZE - 1; row < SIZE; row++, col--)
+            {
+                square = GetSquare(row, col);
+                if (symbol == EMPTY || square.Text != symbol)
+                    return false;
+            }
             return true;
         }
 
         private bool IsFull()
         {
+            for (int row = 0; row < SIZE; row++)
+            {
+                for (int col = 0; col < SIZE; col++)
+                {
+                    Label square = GetSquare(row, col);
+
+                    if (square.Text == EMPTY)
+                        return false;
+                }
+            }
             return true;
         }
 
@@ -198,10 +212,20 @@ namespace TicTacToe
         //* TODO:  finish these 2
         private void HighlightRow(int row)
         {
+            for (int col = 0; col < SIZE; col++)
+            {
+                Label square = GetSquare(row, col);
+                square.ForeColor = Color.Red;
+            }
         }
 
         private void HighlightDiagonal1()
         {
+            for (int row = 0, col = 0; row < SIZE; row++, col++)
+            {
+                Label l = GetSquare(row, col);
+                l.ForeColor = Color.Red;
+            }
         }
 
         //* TODO:  finish this
@@ -210,10 +234,12 @@ namespace TicTacToe
             switch (winningDimension)
             {
                 case ROW:
-
+                    HighlightRow(winningValue);
+                    resultLabel.Text = (player + "wins!");
                     break;
                 case COLUMN:
-
+                    HighlightColumn(winningValue);
+                    resultLabel.Text = (player + "wins!");
                     break;
                 case DIAGONAL:
                     HighlightDiagonal(winningValue);
@@ -225,10 +251,47 @@ namespace TicTacToe
         //* TODO:  finish these 2
         private void ResetSquares()
         {
+            for (int row = 0; row < SIZE; row++)
+            {
+                for (int col = 0; col < SIZE; col++)
+                {
+                    Label square = GetSquare(row, col);
+                    square.Click += new System.EventHandler(this.label_Click);
+                    square.Text = EMPTY;
+                    square.ForeColor = Color.Black;
+                    resultLabel.Text = "";
+                }
+            }
         }
 
         private void MakeComputerMove()
         {
+            Random random1 = new Random();
+            int computerCol, computerRow;
+            int winningDimension = NONE;
+            int winningValue = NONE;
+            Label computerChoice;
+
+            do
+            {
+                computerCol = random1.Next(5);
+                computerRow = random1.Next(5);
+
+                computerChoice = GetSquare(computerRow, computerCol);
+            }
+            while (computerChoice.Text != EMPTY);
+
+            computerChoice.Text = COMPUTER_SYMBOL;
+
+            if (IsWinner(out winningDimension, out winningValue) == true)
+            {
+                DisableAllSquares();
+                HighlightWinner("Computer", winningDimension, winningValue);
+                MessageBox.Show("Computer wins.");
+            }
+            else if (IsFull() == true)
+                MessageBox.Show("You have tied");
+          
         }
 
         // Setting the enabled property changes the look and feel of the cell.
@@ -273,15 +336,35 @@ namespace TicTacToe
             int winningValue = NONE;
 
             Label clickedLabel = (Label)sender;
+            clickedLabel.Text = USER_SYMBOL;
+            DisableSquare(clickedLabel);
+
+            if (IsWinner(out winningDimension, out winningValue) == false)
+            {
+                if (IsFull() == false)
+                {
+                    MakeComputerMove();
+                }
+                else
+                    MessageBox.Show("You have tied");
+            }
+            else
+            {
+                DisableAllSquares();
+                HighlightWinner("User", winningDimension, winningValue);
+                MessageBox.Show("You win!");
+            }
 
         }
 
         private void newGameButton_Click(object sender, EventArgs e)
         {
+            ResetSquares();
         }
 
         private void exitButton_Click(object sender, EventArgs e)
         {
+            this.Close();
         }
     }
 }
