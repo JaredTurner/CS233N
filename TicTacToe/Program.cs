@@ -8,6 +8,7 @@ namespace TicTacToe
 {
     static class Program
     {
+        /// Testing comments on git
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
